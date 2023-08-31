@@ -8,7 +8,7 @@ namespace Registration.HTTPServer
         private readonly IEmailService _emailService;
 
         private readonly HttpListener _listener;
-        private static string url = "http://localhost:8000/";
+        private static string url = "http://localhost:8000/"; // Store in env+ironment variables
 
         public HttpServer(IEmailService emailService)
         {
@@ -42,6 +42,22 @@ namespace Registration.HTTPServer
                 {
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                 }
+
+                if(request.HttpMethod == "GET" && request.Url.AbsolutePath == "/checkCode")
+                {
+                    var email = request.QueryString.Get("email");
+                    var code = request.QueryString.Get("code");
+
+                    var status = await _emailService.CheckCode(code, email);
+
+                    if(status)
+                        response.StatusCode = (int)HttpStatusCode.OK;
+                    else
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+                    Console.WriteLine($"{(int)HttpStatusCode.BadRequest}");
+                }
+                response.Close();
             }
         }
     }
