@@ -4,6 +4,8 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Registration.Services;
 using Newtonsoft.Json;
+using System;
+using Registration.HTTPServer;
 
 namespace SimpleWebServer
 {
@@ -19,34 +21,11 @@ namespace SimpleWebServer
 
             var emailService = serviceProvider.GetRequiredService<IEmailService>();
 
-            HttpListener listener = new HttpListener();
-            listener.Prefixes.Add("http://localhost:8080/");
-            listener.Start();
+            var httpServer = new HttpServer(emailService); // Создание экземпляра HttpServer
+            await httpServer.StartListeningAsync(); // Запуск сервера
 
-            while (true)
-            {
-                HttpListenerContext context = listener.GetContext();
-                HttpListenerRequest request = context.Request;
-                HttpListenerResponse response = context.Response;
-
-                if (request.HttpMethod == "GET" && request.Url.AbsolutePath == "/sendcode")
-                {
-                    var email = request.QueryString.Get("email");
-
-                    // Вызываем метод SendCode
-                    var newData = await emailService.SendCode(email);
-                    
-                    Console.WriteLine($"{newData.DateTime} {newData.Email} код {newData.Code}");
-
-                    response.StatusCode = (int)HttpStatusCode.OK;
-                }
-                else
-                {
-                    response.StatusCode = (int)HttpStatusCode.NotFound;
-                }
-
-                response.Close();
-            }
+            Console.WriteLine("HTTP server is now running. Press Enter to stop.");
+            Console.ReadLine();
         }
     }
 }

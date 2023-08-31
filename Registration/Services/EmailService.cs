@@ -13,11 +13,6 @@ namespace Registration.Services
             _context = context;
         }
 
-        public async Task<List<EmailModel>> GetAll()
-        {
-            return await _context.Emails.ToListAsync();
-        }
-
         public async Task<EmailModel> SendCode(string email)
         {
             var random = new Random();
