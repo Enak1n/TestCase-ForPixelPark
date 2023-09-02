@@ -1,12 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Registration.Data;
 using Registration.Entity;
+using System.Text.RegularExpressions;
 
 namespace Registration.Services
 {
     public class EmailService : IEmailService
     {
         private readonly Context _context;
+        private readonly string _pattern = @"^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$";
 
         public EmailService(Context context)
         {
@@ -15,7 +17,7 @@ namespace Registration.Services
 
         public async Task<bool> CheckCode(string code, string email)
         {
-            var user = await _context.Emails.FirstOrDefaultAsync(x => x.Email == email);
+            var user = await _context.Emails.OrderBy(x => x.Id).LastOrDefaultAsync(x => x.Email == email);
 
             if (user != null)
             {
@@ -27,19 +29,23 @@ namespace Registration.Services
 
         public async Task<EmailModel> SendCode(string email)
         {
-            var random = new Random();
-            string code = random.Next(100000, 1000000).ToString();
+            Guid guid = Guid.NewGuid();
+            string formattedGuid = guid.ToString("N").Substring(0, 6);
 
-            var data = new EmailModel(email, code);
+            if (Regex.IsMatch(email, _pattern))
+            {
+                var data = new EmailModel(email, formattedGuid);
+                await Task.Delay(3000); // Imaginary delay
+                /**
+                  * We can add real sending email with ﻿System.Net.Mail or with another library
+                **/
+                await _context.Emails.AddAsync(data);
+                await _context.SaveChangesAsync();
 
-            /**
-              * We can add real sending email with ﻿System.Net.Mail or with another library
-            **/
+                return data;
+            }
 
-            await _context.Emails.AddAsync(data);
-            await _context.SaveChangesAsync();
-
-            return data;
+            return null;
         }
     }
 }

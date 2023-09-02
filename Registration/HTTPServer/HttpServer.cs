@@ -8,11 +8,11 @@ namespace Registration.HTTPServer
         private readonly IEmailService _emailService;
 
         private readonly HttpListener _listener;
-        private static string url = "http://localhost:8000/"; // Store in env+ironment variables
+        private static string url = "http://localhost:8000/"; // Store in environment variables
 
         public HttpServer(IEmailService emailService)
         {
-            _emailService = emailService; 
+            _emailService = emailService;
 
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
@@ -34,29 +34,36 @@ namespace Registration.HTTPServer
 
                     var newData = await _emailService.SendCode(email);
 
-                    Console.WriteLine($"{newData.DateTime} {newData.Email} код {newData.Code}");
+                    if (newData == null)
+                    {
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{newData.DateTime} {newData.Email} код {newData.Code}");
 
-                    response.StatusCode = (int)HttpStatusCode.OK;
+                        response.StatusCode = (int)HttpStatusCode.OK;
+                    }
                 }
                 else
                 {
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                 }
 
-                if(request.HttpMethod == "GET" && request.Url.AbsolutePath == "/checkCode")
+                if (request.HttpMethod == "GET" && request.Url.AbsolutePath == "/checkCode")
                 {
                     var email = request.QueryString.Get("email");
                     var code = request.QueryString.Get("code");
 
                     var status = await _emailService.CheckCode(code, email);
 
-                    if(status)
+                    if (status)
                         response.StatusCode = (int)HttpStatusCode.OK;
                     else
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
-
-                    Console.WriteLine($"{(int)HttpStatusCode.BadRequest}");
                 }
+
+                response.Headers.Add("Access-Control-Allow-Origin", "*");
                 response.Close();
             }
         }
