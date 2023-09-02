@@ -1,10 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Registration.Data;
-using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Registration.Services;
-using Newtonsoft.Json;
-using System;
 using Registration.HTTPServer;
 
 namespace SimpleWebServer

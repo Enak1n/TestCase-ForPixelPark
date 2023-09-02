@@ -8,7 +8,7 @@ namespace Registration.Services
     public class EmailService : IEmailService
     {
         private readonly Context _context;
-        private readonly string _pattern = @"^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$";
+        private readonly string _pattern = @"^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$"; // Regex for email
 
         public EmailService(Context context)
         {
